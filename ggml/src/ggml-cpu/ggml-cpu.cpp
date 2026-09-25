@@ -40,7 +40,7 @@
 // ggml-backend interface
 
 std::vector<ggml_backend_buffer_type_t> & ggml_backend_cpu_get_extra_buffer_types() {
-    static std::vector<ggml_backend_buffer_type_t> bufts = []() {
+    static std::vector<ggml_backend_buffer_type_t> & bufts = *new std::vector<ggml_backend_buffer_type_t>([]() {
         std::vector<ggml_backend_buffer_type_t> bufts;
 
 #if defined(__AMX_INT8__) && defined(__AVX512VNNI__)
@@ -68,17 +68,17 @@ std::vector<ggml_backend_buffer_type_t> & ggml_backend_cpu_get_extra_buffer_type
 #endif
 
         return bufts;
-    }();
+    }());
 
     return bufts;
 }
 
 static ggml_backend_buffer_type_t * ggml_backend_cpu_device_get_extra_buffers_type(ggml_backend_dev_t device) {
-    static std::vector<ggml_backend_buffer_type_t> extra_bufts = [] {
+    static std::vector<ggml_backend_buffer_type_t> & extra_bufts = *new std::vector<ggml_backend_buffer_type_t>([] {
         std::vector<ggml_backend_buffer_type_t> bufts = ggml_backend_cpu_get_extra_buffer_types();
         bufts.push_back(nullptr);
         return bufts;
-    }();
+    }());
 
     return extra_bufts.data();
 

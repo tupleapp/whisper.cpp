@@ -290,7 +290,7 @@ struct ggml_backend_registry {
 };
 
 static ggml_backend_registry & get_reg() {
-    static ggml_backend_registry reg;
+    static ggml_backend_registry & reg = *new ggml_backend_registry;
     return reg;
 }
 

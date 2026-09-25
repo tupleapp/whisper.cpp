@@ -287,11 +287,11 @@ static bool ggml_backend_metal_buffer_type_shared_is_host(ggml_backend_buffer_ty
 }
 
 static ggml_backend_buffer_type_t ggml_backend_metal_buffer_type_shared(int device) {
-    static std::mutex mutex;
+    static std::mutex & mutex = *new std::mutex;
     std::lock_guard<std::mutex> lock(mutex);
 
-    static std::vector<ggml_backend_buffer_type> bufts;
-    static std::vector<ggml_backend_metal_buffer_type_ptr> ctxs;
+    static std::vector<ggml_backend_buffer_type> & bufts = *new std::vector<ggml_backend_buffer_type>;
+    static std::vector<ggml_backend_metal_buffer_type_ptr> & ctxs = *new std::vector<ggml_backend_metal_buffer_type_ptr>;
 
     static bool initialized = false;
     if (!initialized) {
@@ -363,11 +363,11 @@ static bool ggml_backend_metal_buffer_type_private_is_host(ggml_backend_buffer_t
 }
 
 static ggml_backend_buffer_type_t ggml_backend_metal_buffer_type_private(int device) {
-    static std::mutex mutex;
+    static std::mutex & mutex = *new std::mutex;
     std::lock_guard<std::mutex> lock(mutex);
 
-    static std::vector<ggml_backend_buffer_type> bufts;
-    static std::vector<ggml_backend_metal_buffer_type_ptr> ctxs;
+    static std::vector<ggml_backend_buffer_type> & bufts = *new std::vector<ggml_backend_buffer_type>;
+    static std::vector<ggml_backend_metal_buffer_type_ptr> & ctxs = *new std::vector<ggml_backend_metal_buffer_type_ptr>;
 
     static bool initialized = false;
     if (!initialized) {
@@ -439,11 +439,11 @@ static bool ggml_backend_metal_buffer_type_mapped_is_host(ggml_backend_buffer_ty
 }
 
 static ggml_backend_buffer_type_t ggml_backend_metal_buffer_type_mapped(int device) {
-    static std::mutex mutex;
+    static std::mutex & mutex = *new std::mutex;
     std::lock_guard<std::mutex> lock(mutex);
 
-    static std::vector<ggml_backend_buffer_type> bufts;
-    static std::vector<ggml_backend_metal_buffer_type_ptr> ctxs;
+    static std::vector<ggml_backend_buffer_type> & bufts = *new std::vector<ggml_backend_buffer_type>;
+    static std::vector<ggml_backend_metal_buffer_type_ptr> & ctxs = *new std::vector<ggml_backend_metal_buffer_type_ptr>;
 
     static bool initialized = false;
     if (!initialized) {
@@ -966,7 +966,7 @@ ggml_backend_reg_t ggml_backend_metal_reg(void) {
     static bool initialized = false;
 
     {
-        static std::mutex mutex;
+        static std::mutex & mutex = *new std::mutex;
         std::lock_guard<std::mutex> lock(mutex);
 
         const char * env = getenv("GGML_METAL_DEVICES");
@@ -974,14 +974,14 @@ ggml_backend_reg_t ggml_backend_metal_reg(void) {
             g_devices = atoi(env);
         }
 
-        static std::vector<ggml_backend_device_ptr> devs;
+        static std::vector<ggml_backend_device_ptr> & devs = *new std::vector<ggml_backend_device_ptr>;
 
         if (!initialized) {
             // workaround macOS limitation (kIOGPUCommandBufferCallbackErrorImpactingInteractivity) until proper fix becomes possible
             // ref: https://github.com/ggml-org/llama.cpp/issues/20141#issuecomment-4272947703
             setenv("AGX_RELAX_CDM_CTXSTORE_TIMEOUT", "1", true);
 
-            static ggml_backend_metal_reg_ptr reg_ctx(ggml_backend_metal_reg_init());
+            static ggml_backend_metal_reg_ptr & reg_ctx = *new ggml_backend_metal_reg_ptr(ggml_backend_metal_reg_init());
 
             for (int i = 0; i < g_devices; ++i) {
                 auto * dev = ggml_backend_metal_device_init(&reg, i);
