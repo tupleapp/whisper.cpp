@@ -145,7 +145,7 @@ static const char * const k_lib_names[GGML_METAL_LIB_COUNT] = {
 
 struct ggml_metal_library {
     // Per-kind compiled libraries. When single_library is true, the whole library
-    // (e.g. a pre-compiled default.metallib or a from-source build) lives at
+    // (e.g. a pre-compiled ggml.metallib or a from-source build) lives at
     // objs[0] and the remaining slots are nil.
     id<MTLLibrary> objs[GGML_METAL_LIB_COUNT];
     bool single_library; // true: combined library at objs[0]; false: per-kind libs in objs[*]
@@ -491,10 +491,10 @@ ggml_metal_library_t ggml_metal_library_init(ggml_metal_device_t dev) {
     const int64_t t_start = ggml_time_us();
 
     NSError * error = nil;
-    NSString * path_lib = ggml_metal_find_metallib(bundle, @"default");
+    NSString * path_lib = ggml_metal_find_metallib(bundle, @"ggml");
 
     if (path_lib != nil) {
-        // pre-compiled library found: a single combined default.metallib
+        // pre-compiled library found: a single combined ggml.metallib
         NSURL * libURL = [NSURL fileURLWithPath:path_lib];
         GGML_LOG_INFO("%s: loading '%s'\n", __func__, [path_lib UTF8String]);
 
@@ -535,7 +535,7 @@ ggml_metal_library_t ggml_metal_library_init(ggml_metal_device_t dev) {
     }
 
     // no pre-compiled metallib: fall back to compiling each kernel source separately
-    GGML_LOG_INFO("%s: default.metallib not found, loading kernel sources\n", __func__);
+    GGML_LOG_INFO("%s: ggml.metallib not found, loading kernel sources\n", __func__);
 
     NSString * path_resource = [[NSProcessInfo processInfo].environment objectForKey:@"GGML_METAL_PATH_RESOURCES"];
     if (path_resource) {

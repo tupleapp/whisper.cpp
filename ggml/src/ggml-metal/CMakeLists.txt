@@ -142,8 +142,6 @@ else()
     if (GGML_METAL_SHADER_DEBUG)
         # note: disabling fast math is needed in order to pass tests/test-backend-ops
         # note: adding -fno-inline fixes the tests when using MTL_SHADER_VALIDATION=1
-        # note: unfortunately, we have to call it default.metallib instead of ggml.metallib
-        #       ref: https://github.com/ggml-org/whisper.cpp/issues/1720
         # note: adding -g causes segmentation fault during compile
         set(XC_FLAGS -fno-fast-math -fno-inline)
     else()
@@ -170,7 +168,7 @@ else()
         list   (APPEND XC_FLAGS -std=${GGML_METAL_STD})
     endif()
 
-    # Compile each kernel source to .air, then link into default.metallib
+    # Compile each kernel source to .air, then link into ggml.metallib
     set(AIR_FILES "")
     foreach(src ${METALLIB_KERNEL_SOURCES})
         get_filename_component(name ${src} NAME_WE)
@@ -185,7 +183,7 @@ else()
         )
     endforeach()
 
-    set(METALLIB_FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib)
+    set(METALLIB_FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml.metallib)
 
     # the tensor API kernels go in a separate metallib, loaded only where supported
     if (GGML_METAL_HAS_TENSOR_LIB)
@@ -213,13 +211,13 @@ else()
     endif()
 
     add_custom_command(
-        OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib
-        COMMAND xcrun -sdk ${METAL_SDK} metallib ${AIR_FILES} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/default.metallib
+        OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml.metallib
+        COMMAND xcrun -sdk ${METAL_SDK} metallib ${AIR_FILES} -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml.metallib
         COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-common.h
         COMMAND rm -f ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ggml-metal-impl.h
         COMMAND rm -rf ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernels
         DEPENDS ${AIR_FILES} ${AIR_MM_TENSOR}
-        COMMENT "Linking Metal kernels into default.metallib"
+        COMMENT "Linking Metal kernels into ggml.metallib"
     )
 
     add_custom_target(
