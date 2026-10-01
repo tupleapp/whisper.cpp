@@ -190,8 +190,10 @@ else()
     # the tensor API kernels go in a separate metallib, loaded only where supported
     if (GGML_METAL_HAS_TENSOR_LIB)
         set(AIR_MM_TENSOR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mul_mm_tensor.air")
-        # the tensor API needs OS 26+
-        set(XC_FLAGS_TENSOR ${XC_FLAGS} -mtargetos=${GGML_METAL_TARGET_OS}26.0${METAL_TARGET_SIM})
+        # the tensor API needs OS 26+, whatever floor the other kernels were given
+        set(XC_FLAGS_TENSOR ${XC_FLAGS})
+        list(FILTER XC_FLAGS_TENSOR EXCLUDE REGEX "^-m(macosx-version-min|targetos)=")
+        list(APPEND XC_FLAGS_TENSOR -mtargetos=${GGML_METAL_TARGET_OS}26.0${METAL_TARGET_SIM})
         add_custom_command(
             OUTPUT ${AIR_MM_TENSOR}
             COMMAND xcrun -sdk ${METAL_SDK} metal ${XC_FLAGS_TENSOR} -DGGML_METAL_HAS_TENSOR -I ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} -c ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/kernels/mul_mm.metal -o ${AIR_MM_TENSOR}
